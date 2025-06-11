@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "technology_in_the_sea_companion",
+  "version": "${version}",
+  "name": "Technology in the Sea Companion",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/technology_in_the_sea_companion/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "io.github.skippyall.technology_in_the_sea_companion.TechnologyInTheSeaCompanion"
+    ]
+  },
+  "mixins": [
+    "technology_in_the_sea_companion.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-language-kotlin": ">=${kotlin_loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
