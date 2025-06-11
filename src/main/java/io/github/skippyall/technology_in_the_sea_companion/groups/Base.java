@@ -1,7 +1,8 @@
 package io.github.skippyall.technology_in_the_sea_companion.groups;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.skippyall.technology_in_the_sea_companion.TechnologyInTheSeaCompanion;
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.minecraft.block.Block;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -20,6 +21,12 @@ import java.util.Set;
 
 public class Base {
     public static final Identifier BASE_STRUCTURE = new Identifier(TechnologyInTheSeaCompanion.MOD_ID, "base");
+    public static final Codec<Base> CODEC = RecordCodecBuilder.create(instance ->
+            instance.group(
+                    BlockPos.CODEC.fieldOf("pos").forGetter(Base::getPos),
+                    Codec.BOOL.fieldOf("exist").forGetter(Base::exits)
+            ).apply(instance, Base::new)
+    );
 
     BlockPos pos;
     boolean exist;
@@ -27,6 +34,14 @@ public class Base {
     public Base(BlockPos pos, boolean exist) {
         this.pos = pos;
         this.exist = exist;
+    }
+
+    public BlockPos getPos() {
+        return pos;
+    }
+
+    public boolean exits() {
+        return exist;
     }
 
     public void createIfNotExist(MinecraftServer server) {
@@ -56,7 +71,6 @@ public class Base {
     public void teleport(ServerPlayerEntity player) {
         MinecraftServer server = player.getServer();
         ServerWorld world = server.getWorld(World.OVERWORLD);
-        world.getSpawnPos()
         if(world == null) {
             player.sendMessage(Text.literal("Error while teleporting: Can't find the overworld").setStyle(Style.EMPTY.withColor(Formatting.RED)));
             return;
