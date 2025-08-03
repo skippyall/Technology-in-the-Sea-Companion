@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import io.github.skippyall.technology_in_the_sea_companion.StartManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 
@@ -16,25 +17,34 @@ import static net.minecraft.server.command.CommandManager.*;
 
 public class GroupCommand {
     public static void groupCommand(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(
-                literal("technologygroup")
-                        .then(literal("create")
-                                .then(argument("name", StringArgumentType.string())
-                                        .executes(GroupCommand::createCommand)
-                                )
+        dispatcher.register(literal("technologygroup")
+                .then(literal("start")
+                        .then(literal("group_create_button")
+                                .requires(source -> source.hasPermissionLevel(2))
+                                .executes(context -> {
+                                    StartManager.formGroup(context.getSource().getWorld());
+                                    return 0;
+                                })
                         )
-                        .then(literal("join")
-                                .then(argument("name", StringArgumentType.string())
-                                        .suggests(GroupCommand::suggestGroup)
-                                        .executes(GroupCommand::joinCommand)
-                                )
+                )
+                .then(literal("create")
+                        .then(argument("name", StringArgumentType.string())
+                                .executes(GroupCommand::createCommand)
                         )
-                        .then(literal("teleport")
-                                .then(argument("name", StringArgumentType.string())
-                                        .suggests(GroupCommand::suggestGroup)
-                                        .executes(GroupCommand::teleportCommand)
-                                )
+                )
+                .then(literal("join")
+                        .then(argument("name", StringArgumentType.string())
+                                .suggests(GroupCommand::suggestGroup)
+                                .executes(GroupCommand::joinCommand)
                         )
+                )
+                .then(literal("teleport")
+                        .then(argument("name", StringArgumentType.string())
+                                .suggests(GroupCommand::suggestGroup)
+                                .requires(source -> source.hasPermissionLevel(2))
+                                .executes(GroupCommand::teleportCommand)
+                        )
+                )
         );
     }
 

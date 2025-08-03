@@ -2,11 +2,10 @@ package io.github.skippyall.technology_in_the_sea_companion.groups;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Uuids;
 
 import java.util.ArrayList;
@@ -45,10 +44,9 @@ public class Group {
 
         MinecraftServer server = player.getServer();
         for (UUID uuid : players) {
-            if (server.getPlayerManager().getPlayer(uuid) != null) {
-                server.getPlayerManager().getPlayer(uuid).sendMessage(
-                        Text.of(player.getGameProfile().getName() + " joined this group").copy().setStyle(Style.EMPTY.withColor(Formatting.YELLOW))
-                );
+            PlayerEntity otherPlayer = server.getPlayerManager().getPlayer(uuid);
+            if (otherPlayer != null) {
+                otherPlayer.sendMessage(player.getDisplayName().copy().append(Text.literal(" joined this group")));
             }
         }
     }

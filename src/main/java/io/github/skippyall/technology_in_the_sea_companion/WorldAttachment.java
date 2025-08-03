@@ -41,6 +41,8 @@ public class WorldAttachment {
         this.stepY = stepY;
     }
 
+    public static void register() {}
+
     public static WorldAttachment getInstance(MinecraftServer server) {
         return server.getOverworld().getAttached(ATTACHMENT_TYPE);
     }

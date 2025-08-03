@@ -30,7 +30,7 @@ public class GroupManager {
     }
 
     public static List<Group> getGroups(MinecraftServer server) {
-        return List.copyOf(WorldAttachment.getInstance(server).getGroups());
+        return WorldAttachment.getInstance(server).getGroups();
     }
 
     public static Group createGroup(MinecraftServer server, String name) {

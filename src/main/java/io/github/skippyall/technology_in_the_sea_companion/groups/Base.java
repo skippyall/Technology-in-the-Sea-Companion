@@ -9,9 +9,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructurePlacementData;
 import net.minecraft.structure.StructureTemplate;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Heightmap;
@@ -70,11 +67,7 @@ public class Base {
 
     public void teleport(ServerPlayerEntity player) {
         MinecraftServer server = player.getServer();
-        ServerWorld world = server.getWorld(World.OVERWORLD);
-        if(world == null) {
-            player.sendMessage(Text.literal("Error while teleporting: Can't find the overworld").setStyle(Style.EMPTY.withColor(Formatting.RED)));
-            return;
-        }
+        ServerWorld world = server.getOverworld();
 
         createIfNotExist(server);
         player.teleport(world, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, Set.of(), 0, 0);
