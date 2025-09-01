@@ -10,7 +10,6 @@ import io.github.skippyall.technology_in_the_sea_companion.StartManager;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 
 import java.util.Optional;
@@ -99,8 +98,11 @@ public class GroupCommand {
     }
 
     public static int listCommand(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        MutableText text = Text.empty();
-        context.getSource().sendFeedback(() -> );
+        StringBuilder text = new StringBuilder();
+        for(Group group : GroupManager.getGroups(context.getSource().getServer())) {
+            text.append(group.getName()).append("\n");
+        }
+        context.getSource().sendFeedback(() -> Text.literal(text.toString()), false);
         return 0;
     }
 
