@@ -17,7 +17,8 @@ public class WorldAttachment {
             instance.group(
                 Group.CODEC.listOf().fieldOf("groups").forGetter(WorldAttachment::getGroups),
                 Codec.INT.optionalFieldOf("stepX", 0).forGetter(WorldAttachment::getStepX),
-                Codec.INT.optionalFieldOf("stepY", -1).forGetter(WorldAttachment::getStepY)
+                Codec.INT.optionalFieldOf("stepY", -1).forGetter(WorldAttachment::getStepY),
+                Codec.BOOL.optionalFieldOf("shipPlaced", false).forGetter(WorldAttachment::isShipPlaced)
             ).apply(instance, WorldAttachment::new)
     );
 
@@ -28,6 +29,7 @@ public class WorldAttachment {
 
     private final List<Group> groups;
     private int stepX, stepY;
+    private boolean shipPlaced = false;
 
     public WorldAttachment() {
         groups = new ArrayList<>();
@@ -35,16 +37,17 @@ public class WorldAttachment {
         this.stepY = -1;
     }
 
-    public WorldAttachment(List<Group> groups, int stepX, int stepY) {
+    public WorldAttachment(List<Group> groups, int stepX, int stepY, boolean shipPlaced) {
         this.groups = new ArrayList<>(groups);
         this.stepX = stepX;
         this.stepY = stepY;
+        this.shipPlaced = shipPlaced;
     }
 
     public static void register() {}
 
     public static WorldAttachment getInstance(MinecraftServer server) {
-        return server.getOverworld().getAttached(ATTACHMENT_TYPE);
+        return server.getOverworld().getAttachedOrCreate(ATTACHMENT_TYPE);
     }
 
     public List<Group> getGroups() {
@@ -65,5 +68,13 @@ public class WorldAttachment {
 
     public void setStepY(int stepY) {
         this.stepY = stepY;
+    }
+
+    public boolean isShipPlaced() {
+        return shipPlaced;
+    }
+
+    public void setShipPlaced() {
+        shipPlaced = true;
     }
 }

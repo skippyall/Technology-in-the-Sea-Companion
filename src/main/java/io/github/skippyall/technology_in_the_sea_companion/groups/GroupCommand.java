@@ -7,7 +7,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.github.skippyall.technology_in_the_sea_companion.StartManager;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 
 import java.util.Optional;
@@ -16,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import static net.minecraft.server.command.CommandManager.*;
 
 public class GroupCommand {
-    public static void groupCommand(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public static void groupCommand(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess access, RegistrationEnvironment environment) {
         dispatcher.register(literal("technologygroup")
                 .then(literal("start")
                         .then(literal("group_create_button")
@@ -38,6 +41,9 @@ public class GroupCommand {
                                 .executes(GroupCommand::joinCommand)
                         )
                 )
+                .then(literal("list")
+                        .executes(GroupCommand::listCommand)
+                )
                 .then(literal("teleport")
                         .then(argument("name", StringArgumentType.string())
                                 .suggests(GroupCommand::suggestGroup)
@@ -49,20 +55,34 @@ public class GroupCommand {
     }
 
     public static int createCommand(CommandContext<ServerCommandSource> context) {
-        GroupManager.createGroup(context.getSource().getServer(), StringArgumentType.getString(context, "name"));
-        return 0;
+        String name = StringArgumentType.getString(context, "name");
+        if(GroupManager.getGroup(context.getSource().getServer(), name).isPresent()) {
+            context.getSource().sendError(Text.of("Group " + name + " already exists"));
+            return 0;
+        }
+
+        GroupManager.createGroup(context.getSource().getServer(), name);
+
+        context.getSource().sendFeedback(() -> Text.of("Group " + name + " was created"), false);
+        return 1;
     }
 
     public static int joinCommand(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         String name = StringArgumentType.getString(context, "name");
+
+        ServerPlayerEntity player = context.getSource().getPlayerOrThrow();
+        Optional<Group> oldGroup = GroupManager.getGroup(player);
+        if(oldGroup.isPresent()) {
+            oldGroup.get().leave(player);
+        }
         Optional<Group> group = GroupManager.getGroup(context.getSource().getServer(), name);
         if(group.isPresent()) {
             group.get().join(context.getSource().getPlayerOrThrow());
         } else {
-            context.getSource().sendMessage(Text.of("Group " + name + " doesn't exist"));
+            context.getSource().sendError(Text.of("Group " + name + " doesn't exist"));
         }
 
-        return 0;
+        return 1;
     }
 
     public static int teleportCommand(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -70,10 +90,17 @@ public class GroupCommand {
         Optional<Group> group = GroupManager.getGroup(context.getSource().getServer(), name);
         if(group.isPresent()) {
             group.get().getBase().teleport(context.getSource().getPlayerOrThrow());
+            context.getSource().sendFeedback(() -> Text.literal("Teleported to base of " + name), true);
         } else {
-            context.getSource().sendMessage(Text.of("Group " + name + " doesn't exist"));
+            context.getSource().sendError(Text.of("Group " + name + " doesn't exist"));
         }
 
+        return 0;
+    }
+
+    public static int listCommand(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        MutableText text = Text.empty();
+        context.getSource().sendFeedback(() -> );
         return 0;
     }
 
