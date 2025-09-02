@@ -3,6 +3,8 @@ package io.github.skippyall.technology_in_the_sea_companion.sun;
 import io.github.skippyall.technology_in_the_sea_companion.TechnologyInTheSeaCompanion;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.block.DaylightDetectorBlock;
 import net.minecraft.block.MapColor;
 import net.minecraft.enchantment.Enchantment;
@@ -13,6 +15,7 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -69,5 +72,8 @@ public class SunManager {
     public static void register() {
         ServerTickEvents.END_WORLD_TICK.register(SunManager::tick);
         SunscreenItem.registerStorage();
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register((entries) -> {
+            entries.add(new ItemStack(SUNSCREEN));
+        });
     }
 }

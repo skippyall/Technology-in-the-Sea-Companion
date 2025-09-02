@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "technologyinthesea:item/empty_sunscreen"
-  }
-}

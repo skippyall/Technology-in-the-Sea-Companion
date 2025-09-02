@@ -8,19 +8,4 @@ public class SunProtectionEnchantment extends Enchantment {
     protected SunProtectionEnchantment() {
         super(Rarity.RARE, EnchantmentTarget.ARMOR, new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET});
     }
-
-    @Override
-    public boolean isTreasure() {
-        return true;
-    }
-
-    @Override
-    public boolean isAvailableForEnchantedBookOffer() {
-        return false;
-    }
-
-    @Override
-    public boolean isAvailableForRandomSelection() {
-        return false;
-    }
 }
