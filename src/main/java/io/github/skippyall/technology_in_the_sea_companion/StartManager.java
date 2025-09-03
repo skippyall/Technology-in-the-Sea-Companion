@@ -72,7 +72,9 @@ public class StartManager {
         AdminClaimHandler.setFlag(server, CLAIM_ID, ModFlags.USE_VEHICLES, new BooleanFlag(false));
         AdminClaimHandler.setFlag(server, CLAIM_ID, ModFlags.CREATURE_SPAWNING, new BooleanFlag(false));
 
-        ClaimApi.API.claim(world, new ChunkPos(0,0), ClaimHandler.ADMIN_PREFIX + CLAIM_ID, false);
+        for(ChunkPos chunkPos : SPAWN_CLAIM_POS) {
+            ClaimApi.API.claim(world, chunkPos, ClaimHandler.ADMIN_PREFIX + CLAIM_ID, false);
+        }
     }
 
     public static void formGroup(ServerWorld world) {

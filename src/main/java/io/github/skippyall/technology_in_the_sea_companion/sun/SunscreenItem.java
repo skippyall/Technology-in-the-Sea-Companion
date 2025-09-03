@@ -6,11 +6,13 @@ import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.fluid.base.FullItemFluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.base.SingleFluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.minecraft.block.MapColor;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
@@ -36,8 +38,24 @@ public class SunscreenItem extends Item {
     }
 
     @Override
+    public boolean isItemBarVisible(ItemStack stack) {
+        return true;
+    }
+
+    @Override
+    public int getItemBarStep(ItemStack stack) {
+        SunscreenStorage storage = new SunscreenStorage(stack, ContainerItemContext.withConstant(stack));
+        return Math.round((float) storage.getAmount() * 13.0F / (float) storage.getCapacity());
+    }
+
+    @Override
+    public int getItemBarColor(ItemStack stack) {
+        return MapColor.YELLOW.color;
+    }
+
+    @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-        if(canUse(user, hand)) {
+        if(tryUse(user, hand, false)) {
             user.setCurrentHand(hand);
             return TypedActionResult.consume(user.getStackInHand(hand));
         } else {
@@ -45,7 +63,19 @@ public class SunscreenItem extends Item {
         }
     }
 
-    public boolean canUse(LivingEntity user, Hand hand) {
+    @Override
+    public void usageTick(World world, LivingEntity user, ItemStack stack, int remainingUseTicks) {
+        if(!tryUse(user, user.getActiveHand(), true)) {
+            user.stopUsingItem();
+        }
+    }
+
+    @Override
+    public int getMaxUseTime(ItemStack stack) {
+        return Integer.MAX_VALUE;
+    }
+
+    public boolean tryUse(LivingEntity user, Hand hand, boolean extract) {
         if(user instanceof PlayerEntity player) {
             StatusEffectInstance effect = user.getStatusEffect(SunManager.SUN_PROTECTION_EFFECT);
             if(effect == null || effect.isDurationBelow(5 * 60 * 20)) {
@@ -57,6 +87,10 @@ public class SunscreenItem extends Item {
                         long extracted = storage.extract(FluidVariant.of(SUNSCREEN.get()), SUNSCREEN_USE_PER_TICK, t);
 
                         if (extracted == SUNSCREEN_USE_PER_TICK) {
+                            if(extract) {
+                                user.addStatusEffect(new StatusEffectInstance(SunManager.SUN_PROTECTION_EFFECT, (effect != null ? effect.getDuration() : 0) + 3 * 20));
+                                t.commit();
+                            }
                             return true;
                         }
                     }
@@ -66,44 +100,15 @@ public class SunscreenItem extends Item {
         return false;
     }
 
-    @Override
-    public void usageTick(World world, LivingEntity user, ItemStack stack, int remainingUseTicks) {
-        if(user instanceof PlayerEntity player) {
-            StatusEffectInstance effect = user.getStatusEffect(SunManager.SUN_PROTECTION_EFFECT);
-            if (effect == null || effect.isDurationBelow(5 * 60 * 20)) {
-                ContainerItemContext context = ContainerItemContext.forPlayerInteraction(player, user.getActiveHand());
-                Storage<FluidVariant> storage = context.find(FluidStorage.ITEM);
-
-                try(Transaction t = Transaction.openOuter()) {
-                    long extracted = storage.extract(FluidVariant.of(SUNSCREEN.get()), SUNSCREEN_USE_PER_TICK, t);
-
-                    if(extracted == SUNSCREEN_USE_PER_TICK) {
-                        t.commit();
-                        user.addStatusEffect(new StatusEffectInstance(SunManager.SUN_PROTECTION_EFFECT, (effect != null ? effect.getDuration() : 0) + 3 * 20));
-                        return;
-                    }
-                }
-            }
-        }
-        user.stopUsingItem();
-    }
-
-    @Override
-    public int getMaxUseTime(ItemStack stack) {
-        return Integer.MAX_VALUE;
-    }
-
     public static void registerStorage() {
         FluidStorage.ITEM.registerForItems(SunscreenStorage::new, SunManager.SUNSCREEN);
     }
 
     public static class SunscreenStorage extends SingleFluidStorage {
         private ContainerItemContext context;
-        private ItemVariant itemVariant;
 
         public SunscreenStorage(ItemStack stack, ContainerItemContext context) {
             this.context = context;
-            this.itemVariant = context.getItemVariant();
             NbtCompound subNbt = stack.getSubNbt("sunscreenStorage");
             if(subNbt != null) {
                 readNbt(subNbt);
@@ -111,15 +116,19 @@ public class SunscreenItem extends Item {
         }
 
         public void exchangeItem(TransactionContext transaction) {
-            NbtCompound nbt = itemVariant.copyOrCreateNbt();
+            NbtCompound nbt = context.getItemVariant().copyOrCreateNbt();
             NbtCompound sunscreenStorage = new NbtCompound();
             writeNbt(sunscreenStorage);
             nbt.put("sunscreenStorage", sunscreenStorage);
-            context.exchange(ItemVariant.of(itemVariant.getItem(), nbt), 1, transaction);
+            context.exchange(ItemVariant.of(context.getItemVariant().getItem(), nbt), 1, transaction);
         }
 
         @Override
         public long insert(FluidVariant insertedVariant, long maxAmount, TransactionContext transaction) {
+            if(!(context.getItemVariant().getItem() == SunManager.SUNSCREEN)) {
+                return 0;
+            }
+
             long inserted = super.insert(insertedVariant, maxAmount, transaction);
             if(inserted > 0) {
                 exchangeItem(transaction);
@@ -129,6 +138,10 @@ public class SunscreenItem extends Item {
 
         @Override
         public long extract(FluidVariant extractedVariant, long maxAmount, TransactionContext transaction) {
+            if(!(context.getItemVariant().getItem() == SunManager.SUNSCREEN)) {
+                return 0;
+            }
+
             long extracted = super.extract(extractedVariant, maxAmount, transaction);
             if(extracted > 0) {
                 exchangeItem(transaction);
