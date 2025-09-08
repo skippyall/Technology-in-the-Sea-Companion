@@ -48,6 +48,7 @@ public class Base {
                 return;
             }
 
+            world.getChunk(pos); //Load the chunk, to ensure y is correct
             int y = world.getTopY(Heightmap.Type.OCEAN_FLOOR_WG, pos.getX(), pos.getZ());
             pos = new BlockPos(pos.getX(), y, pos.getZ());
 

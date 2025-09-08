@@ -46,7 +46,7 @@ public class GroupManager {
         int stepX = attachment.getStepX();
         int stepY = attachment.getStepY();
 
-        BlockPos pos = new BlockPos(stepX * 200, 0, stepY * 200);
+        BlockPos pos = new BlockPos(stepX * 500, 0, stepY * 500);
 
         if (stepX >= 0 && stepY < 0) {
             stepX++;
