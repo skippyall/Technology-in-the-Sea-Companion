@@ -12,6 +12,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.block.entity.SignText;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -39,6 +41,7 @@ public class StartManager {
     public static final BlockPos SIGN_POS = new BlockPos(-2, 63, -14);
     public static final Box GROUP_ROOM = new Box(-5, 62, -15, 5, 65, -9);
 
+    @SuppressWarnings({"deprecation", "removal"})
     public static void onServerStart(MinecraftServer server) {
         ServerWorld world = server.getOverworld();
         if(world == null) {
@@ -108,6 +111,11 @@ public class StartManager {
             group.getBase().createIfNotExist(world.getServer());
 
             group.join(players);
+
+            for(ServerPlayerEntity player : players) {
+                player.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 100));
+                group.getBase().teleport(player);
+            }
 
             playerManager.broadcast(Text.literal("Group formed"), false);
         } catch (Exception e) {

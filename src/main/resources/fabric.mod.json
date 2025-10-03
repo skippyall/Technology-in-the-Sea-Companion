@@ -4,7 +4,9 @@
   "version": "${version}",
   "name": "Technology in the Sea Companion",
   "description": "",
-  "authors": [],
+  "authors": [
+    "skippyall"
+  ],
   "contact": {},
   "license": "MIT",
   "icon": "assets/technology_in_the_sea_companion/icon.png",

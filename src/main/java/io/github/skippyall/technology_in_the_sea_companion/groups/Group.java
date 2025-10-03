@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -45,6 +46,11 @@ public class Group {
     }
 
     public void join(ServerPlayerEntity player) {
+        Optional<Group> oldGroup = GroupManager.getGroup(player);
+        if(oldGroup.isPresent()) {
+            oldGroup.get().leave(player);
+        }
+
         broadcastMessage(player.getDisplayName().copy().append(Text.literal(" joined this group")), player.server);
 
         players.add(player.getUuid());

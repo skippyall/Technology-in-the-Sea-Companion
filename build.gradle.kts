@@ -30,6 +30,9 @@ repositories {
     mavenCentral()
     maven(url = "https://maven.teamresourceful.com/repository/maven-public/")
     maven(url = "https://maven.shedaniel.me/")
+    maven(url = "https://raw.githubusercontent.com/tom5454/maven/main")
+    maven(url = "https://maven.squiddev.cc")
+    maven(url = "https://maven.blamejared.com")
 }
 
 dependencies {
@@ -42,6 +45,14 @@ dependencies {
 
     modImplementation("earth.terrarium.cadmus:cadmus-fabric-${project.property("minecraft_version")}:${project.property("cadmus_version")}") {
         exclude(group = "com.github.llamalad7.mixinextras")
+    }
+
+    modImplementation("com.tom5454.createoreexcavation:CreateOreExcavationFabric-1.20:${project.property("create_ore_excavation_version")}") {
+        isTransitive = false
+    }
+    modImplementation("com.tom5454.chunkstorage:ChunkStorageFabric-120:1.0.4")
+    modImplementation("vazkii.botania:Botania:1.20.1-450-FABRIC") {
+        isTransitive = false
     }
 }
 

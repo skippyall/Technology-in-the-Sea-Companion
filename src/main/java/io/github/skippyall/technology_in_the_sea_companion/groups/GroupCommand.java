@@ -1,5 +1,6 @@
 package io.github.skippyall.technology_in_the_sea_companion.groups;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -13,6 +14,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static net.minecraft.server.command.CommandManager.*;
@@ -42,6 +44,10 @@ public class GroupCommand {
                 )
                 .then(literal("list")
                         .executes(GroupCommand::listCommand)
+                        .then(argument("name", StringArgumentType.string())
+                                .suggests(GroupCommand::suggestGroup)
+                                .executes(GroupCommand::listGroupCommand)
+                        )
                 )
                 .then(literal("teleport")
                         .then(argument("name", StringArgumentType.string())
@@ -69,16 +75,12 @@ public class GroupCommand {
     public static int joinCommand(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         String name = StringArgumentType.getString(context, "name");
 
-        ServerPlayerEntity player = context.getSource().getPlayerOrThrow();
-        Optional<Group> oldGroup = GroupManager.getGroup(player);
-        if(oldGroup.isPresent()) {
-            oldGroup.get().leave(player);
-        }
         Optional<Group> group = GroupManager.getGroup(context.getSource().getServer(), name);
         if(group.isPresent()) {
             group.get().join(context.getSource().getPlayerOrThrow());
         } else {
             context.getSource().sendError(Text.of("Group " + name + " doesn't exist"));
+            return 0;
         }
 
         return 1;
@@ -92,9 +94,10 @@ public class GroupCommand {
             context.getSource().sendFeedback(() -> Text.literal("Teleported to base of " + name), true);
         } else {
             context.getSource().sendError(Text.of("Group " + name + " doesn't exist"));
+            return 0;
         }
 
-        return 0;
+        return 1;
     }
 
     public static int listCommand(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -103,7 +106,28 @@ public class GroupCommand {
             text.append(group.getName()).append("\n");
         }
         context.getSource().sendFeedback(() -> Text.literal(text.toString()), false);
-        return 0;
+        return 1;
+    }
+
+    public static int listGroupCommand(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        String name = StringArgumentType.getString(context, "name");
+        Optional<Group> group = GroupManager.getGroup(context.getSource().getServer(), name);
+        if(group.isPresent()) {
+            StringBuilder text = new StringBuilder();
+            for(UUID uuid : group.get().getPlayers()) {
+                Optional<GameProfile> profile = context.getSource().getServer().getUserCache().getByUuid(uuid);
+                if(profile.isPresent()) {
+                    text.append(profile.get().getName()).append('\n');
+                } else {
+                    text.append(uuid.toString()).append('\n');
+                }
+            }
+            context.getSource().sendFeedback(() -> Text.literal(text.toString()), false);
+            return 1;
+        } else {
+            context.getSource().sendError(Text.of("Group " + name + " doesn't exist"));
+            return 0;
+        }
     }
 
     public static CompletableFuture<Suggestions> suggestGroup(CommandContext<ServerCommandSource> commandContext, SuggestionsBuilder suggestionsBuilder) {

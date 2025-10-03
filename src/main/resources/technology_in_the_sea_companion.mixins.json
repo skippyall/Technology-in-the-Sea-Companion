@@ -4,8 +4,10 @@
   "package": "io.github.skippyall.technology_in_the_sea_companion.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "AnvilMixin",
     "BlockMixin",
-    "EntityMixin",
+    "FakeAirBlockMixin",
+    "OpMixin",
     "ServerPlayerEntityMixin"
   ],
   "client": [

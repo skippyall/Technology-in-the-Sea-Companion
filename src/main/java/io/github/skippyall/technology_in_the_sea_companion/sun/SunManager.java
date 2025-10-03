@@ -47,7 +47,7 @@ public class SunManager {
             Optional<RegistryEntry.Reference<DamageType>> SUN_DAMAGE_TYPE = world.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE).getEntry(SUN_DAMAGE_TYPE_KEY);
             if(SUN_DAMAGE_TYPE.isPresent()) {
                 for (PlayerEntity player : world.getPlayers()) {
-                    if (world.getLightLevel(LightType.SKY, player.getBlockPos()) - world.getAmbientDarkness() > 10 && !isProtected(player)) {
+                    if (world.getLightLevel(LightType.SKY, player.getBlockPos()) - world.getAmbientDarkness() > 12 && !isProtected(player)) {
                         player.damage(new DamageSource(SUN_DAMAGE_TYPE.get()), 1);
                     }
                 }
@@ -72,8 +72,5 @@ public class SunManager {
     public static void register() {
         ServerTickEvents.END_WORLD_TICK.register(SunManager::tick);
         SunscreenItem.registerStorage();
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register((entries) -> {
-            entries.add(new ItemStack(SUNSCREEN));
-        });
     }
 }
